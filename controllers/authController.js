@@ -1,66 +1,74 @@
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { userModel } from "../models/userModel";
-import { JWT_SECRET } from "../config/config";
+import User from "../models/User.js";
 
-export async function signUp(req, res) {
+export const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: "all fields are requied" });
+    const { username, email, password, role } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Fields are required" });
+    }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email Already Registered" });
     }
 
-    const user = await userModel.create({
-      name,
-      email,
-      password,
-      role,
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const user = await User.create({
+      username: username,
+      email: email,
+      password: hashedPassword,
+      role: role,
     });
-
-    if (!user) {
-      return res
-        .status(500)
-        .json({ message: "User not created. Something went wrong" });
-    }
-
-    res.status(200).json({ message: "signUp successfull", data: user });
+    res.status(200).json({ message: "User Signup Successful", user });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || "something went wrong" });
+    return res.status(500).json({ message: "Unable to create the user" });
   }
-}
+};
 
-export async function signIn(req, res) {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "email and password are required" });
+      return res.status(400).json({ message: "All Fields are required" });
     }
 
-    const user = await userModel.find({ email });
+    const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(400).json({ message: "No user with the given email" });
+      return res.status(404).json({ message: "Invalid email or password" });
     }
 
-    if (user.password != password) {
-      return res.status(400).json({ message: "Incorrect password" });
+    const checkingPassword = await bcrypt.compare(password, user.password);
+    if (!checkingPassword) {
+      return res.status(404).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
       {
-        email: user.email,
-        name: user.name,
+        userId: user._id,
         role: user.role,
       },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
     );
 
-    await res.cookie("token", token);
-
-    return res.status(200).json({ message: "Signin Successfull" });
-  } catch (error) {}
-}
+    res.status(200).json({
+      message: "Login Successful",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Unable to login the user", error: error.message });
+  }
+};
