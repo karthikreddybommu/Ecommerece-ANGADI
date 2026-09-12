@@ -5,13 +5,13 @@ import {
   updateUser,
   deletedUser,
 } from "../controllers/userController.js";
-import { authentication, role } from "../middleware/authMiddleware.js";
+import { authenticate, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", authentication, role("admin"), getAllUsers);
-router.get("/:id", authentication, role("admin"), getUserById);
-router.put("/:id", authentication, role("admin"), updateUser);
-router.delete("/:id", authentication, role("admin"), deletedUser);
+router.get("/", authenticate, authorize("admin"), getAllUsers);
+router.get("/:id", authenticate, authorize("admin"), getUserById);
+router.put("/:id", authenticate, authorize("admin"), updateUser);
+router.delete("/:id", authenticate, authorize("admin"), deletedUser);
 
 export default router;

@@ -66,6 +66,11 @@ export const login = async (req, res) => {
       },
     );
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.status(200).json({
       message: "Login Successful",
       token,
@@ -81,6 +86,11 @@ export const login = async (req, res) => {
       .status(500)
       .json({ message: "Unable to login the user", error: error.message });
   }
+};
+
+export const logout = async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logout Successful" });
 };
 
 export const signUp = signup;
