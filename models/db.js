@@ -4,11 +4,8 @@ import { MONGODB_URL } from "../config/config.js";
 export async function connectDb() {
   try {
     await mongoose.connect(MONGODB_URL);
-    console.log("✅ Connected to MongoDB successfully");
+    console.log("Connected MongoDB successfully");
   } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error.message || error);
-    console.warn(
-      "⚠️ Tip: Make sure MongoDB is running locally (e.g. MongoDB service / Compass) or configure MONGODB_URL in .env to your MongoDB Atlas connection string."
-    );
+    console.error(" MongoDB Error:", error.message || error);
   }
 }
