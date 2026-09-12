@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
-import { MONGODB_URL } from "../config/config";
+import { MONGODB_URL } from "../config/config.js";
 
 export async function connectDb() {
   try {
     await mongoose.connect(MONGODB_URL);
-    console.log("Connected to db");
+    console.log("✅ Connected to MongoDB successfully");
   } catch (error) {
-    console.log(error.message || error);
-    process.exit(1);
+    console.error("❌ MongoDB Connection Error:", error.message || error);
+    console.warn(
+      "⚠️ Tip: Make sure MongoDB is running locally (e.g. MongoDB service / Compass) or configure MONGODB_URL in .env to your MongoDB Atlas connection string."
+    );
   }
 }

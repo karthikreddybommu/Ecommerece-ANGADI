@@ -14,18 +14,16 @@ const productSchema = new mongoose.Schema(
         price:{
             type:Number,
             required:true,
-            minimum:0,
-            trim:true
+            min:0
         },
         category:{
             type:String,
             required:true
         },
         stock:{
-            String:Number,
+            type:Number,
             required:true,
-            minimum:0,
-            trim:true
+            min:0
         },
         published:{
             type:Boolean,
@@ -43,4 +41,5 @@ const productSchema = new mongoose.Schema(
 )
 
 const productModel = mongoose.model("product",productSchema);
+export default productModel;
 export {productModel};

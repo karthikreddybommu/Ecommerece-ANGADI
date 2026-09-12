@@ -5,6 +5,7 @@ import {
   updateUser,
   deletedUser,
 } from "../controllers/userController.js";
+import { authentication, role } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
