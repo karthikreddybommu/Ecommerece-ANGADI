@@ -166,49 +166,160 @@ const updateProduct = async (req, res) => {
     }
 }
 
-
-
-const publishProduct = async(req,res)=>{
+const deleteProduct = async (req, res) => {
     try {
-        const {id}=req.params;
-        if(!mongoose.isValidObjectId(id)){
+
+        const { id } = req.params;
+
+
+        if (!mongoose.isValidObjectId(id)) {
+
             return res.status(400).json({
-                message:"Invalid product ID"
+                message: "Invalid product ID"
+            });
+
+        }
+
+
+        const product = await productModel.findById(id);
+
+        if (!product) {
+
+            return res.status(404).json({
+                message: "Product not found"
+            });
+
+        }
+
+
+        // Ownership check
+        if (product.ownerId.toString() !== req.user._id.toString()) {
+
+            return res.status(403).json({
+                message: "You can delete only your own product"
+            });
+
+        }
+
+
+        await productModel.findByIdAndDelete(id);
+
+
+        res.status(200).json({
+            message: "Product deleted successfully"
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
+
+
+
+const publishProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({
+                message: "Invalid product ID"
             });
         }
         const product = await productModel.findById(id);
-        if (!product){
+        if (!product) {
             return res.status(404).json({
-                message:"Product not found"
+                message: "Product not found"
             });
         }
 
-        if(product.ownerId.toString() !==req.user._id.toString()){
+        if (product.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({
-                message:"You can publish only your own product"
+                message: "You can publish only your own product"
             });
         }
-        product.published=true;
+        product.published = true;
         await product.save();
         res.status(200).json({
-            message:"product published successfully",
-            data:product
+            message: "product published successfully",
+            data: product
         });
 
-    }catch(error){
+    } catch (error) {
         res.status(500).json({
-            message:error.message
+            message: error.message
         });
     }
 };
 
 
 
+const unpublishProduct = async (req, res) => {
+    try {
+
+        const { id } = req.params;
+
+
+        if (!mongoose.isValidObjectId(id)) {
+
+            return res.status(400).json({
+                message: "Invalid product ID"
+            });
+
+        }
+
+
+        const product = await productModel.findById(id);
+
+        if (!product) {
+
+            return res.status(404).json({
+                message: "Product not found"
+            });
+
+        }
+
+
+        // Ownership check
+        if (product.ownerId.toString() !== req.user._id.toString()) {
+
+            return res.status(403).json({
+                message: "You can unpublish only your own product"
+            });
+
+        }
+
+
+        product.published = false;
+
+        await product.save();
+
+
+        res.status(200).json({
+            message: "Product unpublished successfully",
+            data: product
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
 
 
 
+export {
+    createProduct,
+    getProducts,
+    getProductById,
+    updateProduct,
+    deleteProduct,
+    publishProduct,
+    unpublishProduct
 
-
-
-
-export { createProduct } 
+};
